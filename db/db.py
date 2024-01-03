@@ -10,13 +10,6 @@ async def db_start():
     db.commit()
 
 
-async def create_profile(user_id):
-    check_word = cur.execute(f"SELECT word FROM words WHERE user_id=={user_id}").fetchone()
-    if not check_word:
-        cur.execute(f"INSERT INTO words VALUES(?, ?, ?)", (user_id, '', ''))
-        db.commit()
-
-
 async def fill_words_or_photos(user_id, word, photo):
     if word is None:
         word = ""
