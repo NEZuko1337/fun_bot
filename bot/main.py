@@ -30,19 +30,29 @@ async def delete_handler(message: Message) -> None:
 
 @dp.message(F.text.lower() == "z g m")
 async def generate_meme(message: Message) -> None:
-    photos = db.get_all_images()
     try:
+        photos = db.get_all_images()
         random_photo = random.choice(photos)
         random_index = photos.index(random_photo)
         words = db.get_all_words()
         size_of_meme = random.randint(0, len(words) - 1)
+        if size_of_meme > 20:
+            size_of_meme = random.randint(4, 15)
     except:
         await message.answer(constants.NO_INFORMATION_FOR_MEME)
     else:
         string_with_meme = ""
-        for part in range(size_of_meme):
-            string_with_meme += words[part] + " "
+        for _ in range(size_of_meme):
+            string_with_meme += random.choice(words) + " "
         await bot.send_photo(chat_id=message.chat.id, caption=string_with_meme, photo=photos[random_index])
+
+
+@dp.message(F.text.lower() == "очистить")
+async def del_db(message: Message):
+    if message.from_user.id == 666729461:
+        await db.delete_db()
+    else:
+        await message.answer("Ты не разработчик, лох!")
 
 
 @dp.message()
@@ -61,18 +71,20 @@ async def echo_handler(message: types.Message) -> None:
     try:
         words = db.get_all_words()
         size_of_meme = random.randint(0, len(words) - 1)
+        if size_of_meme > 20:
+            size_of_meme = random.randint(4, 15)
     except:
         await message.answer(constants.NO_INFORMATION_FOR_MEME)
     else:
         string_for_words = ""
         for word in range(size_of_meme):
-            string_for_words += words[word] + " "
+            string_for_words += random.choice(words) + " "
         user_id = message.from_user.id
         user_message_count[user_id] = user_message_count.get(user_id, 0) + 1
         if user_message_count[user_id] % 4 == 0:
             await message.reply(string_for_words)
 
-    if db.size_of_db() > 250:
+    if db.size_of_db() > 400:
         await db.delete_db()
 
 
