@@ -35,12 +35,10 @@ async def generate_meme(message: Message) -> None:
         random_photo = random.choice(photos)
         random_index = photos.index(random_photo)
         words = db.get_all_words()
-        size_of_meme = random.randint(0, len(words) - 1)
-        if size_of_meme > 20:
-            size_of_meme = random.randint(4, 15)
     except:
         await message.answer(constants.NO_INFORMATION_FOR_MEME)
     else:
+        size_of_meme = random.randint(1, 20)
         string_with_meme = ""
         for _ in range(size_of_meme):
             string_with_meme += random.choice(words) + " "
@@ -100,9 +98,7 @@ async def echo_handler(message: Message) -> None:
 
     try:
         words = db.get_all_words()
-        size_of_meme = random.randint(0, len(words) - 1)
-        if size_of_meme > 20:
-            size_of_meme = random.randint(4, 15)
+        size_of_meme = random.randint(1, 20)
     except:
         await message.answer(constants.NO_INFORMATION_FOR_MEME)
     else:
