@@ -1,15 +1,15 @@
 import asyncio
 import os
 import random
-import constants
 
-from aiogram import Bot, Dispatcher, types, F
+from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import Message
-from db import db
+from aiogram.types import Message, FSInputFile
 from dotenv import load_dotenv
 
+from bot import constants, text_to_speech
+from db import db
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
@@ -20,7 +20,7 @@ user_message_count = {}
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-    await message.answer(f"Саламчик маленькие, папа тут!")
+    await message.answer(constants.GREETINGS)
 
 
 @dp.message(F.text.lower() == "удалить")
@@ -47,16 +47,46 @@ async def generate_meme(message: Message) -> None:
         await bot.send_photo(chat_id=message.chat.id, caption=string_with_meme, photo=photos[random_index])
 
 
+@dp.message(F.text.lower() == "z g a")
+async def generate_answer_with_audio(message: Message) -> None:
+    try:
+        words = db.get_all_words()
+        size_of_syntax = random.randint(1, 20)
+    except:
+        await message.answer(constants.NO_INFORMATION_FOR_MEME)
+    else:
+        string_for_words = ""
+        for word in range(size_of_syntax):
+            string_for_words += random.choice(words) + " "
+
+        filepath = text_to_speech.convert_text_to_speech(text=string_for_words)
+        voice = FSInputFile(path=filepath)
+        await message.reply_audio(voice)
+
+
+@dp.message(F.text.lower() == "обновление")
+async def say_about_new_update(message: Message) -> None:
+    if message.from_user.id == 666729461:
+        filename = "update.opus"
+        if filename not in os.listdir("AUDIO"):
+            text_to_speech.update_info()
+
+        update_voice = FSInputFile(path="AUDIO/update.opus")
+        await message.reply_audio(audio=update_voice, caption=constants.UPDATE1_INPUT)
+    else:
+        await message.reply(text=constants.DONT_HAVE_PERMISSIONS)
+
+
 @dp.message(F.text.lower() == "очистить")
-async def del_db(message: Message):
+async def del_db(message: Message) -> None:
     if message.from_user.id == 666729461:
         await db.delete_db()
     else:
-        await message.answer("Ты не разработчик, лох!")
+        await message.reply(text=constants.DONT_HAVE_PERMISSIONS)
 
 
 @dp.message()
-async def echo_handler(message: types.Message) -> None:
+async def echo_handler(message: Message) -> None:
     user_id = message.from_user.id
     user_text = message.text
     photo = message.photo
